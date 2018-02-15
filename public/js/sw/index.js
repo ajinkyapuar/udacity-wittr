@@ -1,11 +1,13 @@
 self.addEventListener('fetch', function (event) {
-    // console.log("Fetch");
-    // console.log(event.request);
+    // TODO: respond to all requests with an html response
+    // containing an element with class="a-winner-is-me".
+    // Ensure the Content-Type of the response is "text/html"
+    console.log(event.request);
     event.respondWith(
-        new Response("Hello World!"), {
+        new Response('<p class="a-winner-is-me">Hello</p>', {
             headers: {
-                'foo': 'bar'
+                'Content-Type': 'text/html'
             }
-        }
+        })
     );
 });
