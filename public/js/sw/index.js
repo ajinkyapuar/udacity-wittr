@@ -1,18 +1,18 @@
 self.addEventListener('fetch', function (event) {
-    // TODO: respond to all requests with an html response
-    // containing an element with class="a-winner-is-me".
-    // Ensure the Content-Type of the response is "text/html"
-    // console.log(event.request);
-    if (event.request.url.endsWith('.jpg')) {
-        event.respondWith(
-            fetch('/imgs/dr-evil.gif')
-        );
-    }
-    // event.respondWith(
-    //     new Response('<p class="a-winner-is-me">Hello</p>', {
-    //         headers: {
-    //             'Content-Type': 'text/html'
-    //         }
-    //     })
-    // );
+    event.respondWith(
+        fetch(event.request).then(function (response) {
+            if (response.status === 404) {
+                // TODO: instead, respond with the gif at
+                // /imgs/dr-evil.gif
+                // using a network request
+                // event.respondWith(
+                return fetch('/imgs/dr-evil.gif')
+                // );
+                // return new Response("Whoops, not found");
+            }
+            return response;
+        }).catch(function () {
+            return new Response("Uh oh, that totally failed!");
+        })
+    );
 });
