@@ -23,6 +23,14 @@ self.addEventListener('install', function (event) {
 });
 
 self.addEventListener('fetch', function (event) {
-    // Leave this blank for now.
-    // We'll get to this in the next task.
+    // TODO: respond with an entry from the cache if there is one.
+    // If there isn't, fetch from the network.
+    event.respondWith(
+        caches.match(event.request).then(function (res) {
+            if (res)
+                return res;
+            else
+                return fetch(event.request.url);
+        })
+    );
 });
