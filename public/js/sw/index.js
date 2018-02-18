@@ -1,18 +1,28 @@
-self.addEventListener('fetch', function (event) {
-    event.respondWith(
-        fetch(event.request).then(function (response) {
-            if (response.status === 404) {
-                // TODO: instead, respond with the gif at
-                // /imgs/dr-evil.gif
-                // using a network request
-                // event.respondWith(
-                return fetch('/imgs/dr-evil.gif')
-                // );
-                // return new Response("Whoops, not found");
-            }
-            return response;
-        }).catch(function () {
-            return new Response("Uh oh, that totally failed!");
+self.addEventListener('install', function (event) {
+    var urlsToCache = [
+        '/',
+        'js/main.js',
+        'css/main.css',
+        'imgs/icon.png',
+        'https://fonts.gstatic.com/s/roboto/v15/2UX7WLTfW3W8TclTUvlFyQ.woff',
+        'https://fonts.gstatic.com/s/roboto/v15/d-6IYplOFocCacKzxwXSOD8E0i7KZn-EPnyo3HZu7kw.woff'
+    ];
+
+    event.waitUntil(
+        // TODO: open a cache named 'wittr-static-v1'
+        // Add cache the urls from urlsToCache
+        caches.open('wittr-static-v1').then(function (cache) {
+            // console.log(cache);
+            cache.addAll(urlsToCache);
+
+        }).catch(function (err) {
+            // console.log(err);
+
         })
     );
+});
+
+self.addEventListener('fetch', function (event) {
+    // Leave this blank for now.
+    // We'll get to this in the next task.
 });
