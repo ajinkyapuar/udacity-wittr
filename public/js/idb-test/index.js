@@ -12,9 +12,8 @@ var dbPromise = idb.open('test-db', 4, function (upgradeDb) {
     case 2:
       var peopleStore = upgradeDb.transaction.objectStore('people');
       peopleStore.createIndex('animal', 'favoriteAnimal');
-      // TODO: create an index on 'people' named 'age', ordered by 'age'      
     case 3:
-      var peopleStore = upgradeDb.transaction.objectStore('people');
+      peopleStore = upgradeDb.transaction.objectStore('people');
       peopleStore.createIndex('age', 'age');
   }
 });
@@ -92,7 +91,7 @@ dbPromise.then(function (db) {
   console.log('Cat people:', people);
 });
 
-// TODO: console.log all people ordered by age
+// people by age
 dbPromise.then(function (db) {
   var tx = db.transaction('people');
   var peopleStore = tx.objectStore('people');
@@ -100,6 +99,26 @@ dbPromise.then(function (db) {
 
   return ageIndex.getAll();
 }).then(function (people) {
-  console.log('People by Age:', people);
+  console.log('People by age:', people);
+});
 
+// Using cursors
+dbPromise.then(function (db) {
+  var tx = db.transaction('people');
+  var peopleStore = tx.objectStore('people');
+  var ageIndex = peopleStore.index('age');
+
+  return ageIndex.openCursor();
+}).then(function (cursor) {
+  if (!cursor) return;
+  return cursor.advance(2);
+}).then(function logPerson(cursor) {
+  if (!cursor) return;
+  console.log("Cursored at:", cursor.value.name);
+  // I could also do things like:
+  // cursor.update(newValue) to change the value, or
+  // cursor.delete() to delete this entry
+  return cursor.continue().then(logPerson);
+}).then(function () {
+  console.log('Done cursoring');
 });
