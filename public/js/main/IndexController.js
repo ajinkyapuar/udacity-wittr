@@ -14,7 +14,7 @@ function openDatabase() {
   // that uses 'id' as its key
   // and has an index called 'by-date', which is sorted
   // by the 'time' property
-  return idb.open('wittr', 1, function (upgradeDb) {
+  return idb.open('wittr', 3, function (upgradeDb) {
     var wittrsStore = upgradeDb.createObjectStore('wittrs', {
       keyPath: 'id'
     });
