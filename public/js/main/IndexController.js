@@ -24,8 +24,13 @@ export default function IndexController(container) {
   this._lostConnectionToast = null;
   this._dbPromise = openDatabase();
   this._registerServiceWorker();
+  this._cleanImageCache();
 
   var indexController = this;
+
+  setInterval(function () {
+    indexController._cleanImageCache();
+  }, 1000 * 60 * 5);
 
   this._showCachedMessages().then(function () {
     indexController._openSocket();
@@ -152,6 +157,39 @@ IndexController.prototype._openSocket = function () {
   });
 };
 
+IndexController.prototype._cleanImageCache = function () {
+  return this._dbPromise.then(function (db) {
+    if (!db) return;
+
+    // TODO: open the 'wittr' object store, get all the messages,
+    // gather all the photo urls.
+    //
+    // Open the 'wittr-content-imgs' cache, and delete any entry
+    // that you no longer need.
+    var imagesNeeded = [];
+
+    var tx = db.transaction('wittrs');
+    return tx.objectStore('wittrs').getAll().then(function (messages) {
+      messages.forEach(function (message) {
+        if (message.photo) {
+          imagesNeeded.push(message.photo);
+        }
+      });
+
+      return caches.open('wittr-content-imgs');
+    }).then(function (cache) {
+      return cache.keys().then(function (requests) {
+        requests.forEach(function (request) {
+          var url = new URL(request.url)
+          if (!imagesNeeded.includes(url.pathname))
+            cache.delete(request);
+        });
+
+      });
+    });
+  });
+};
+
 // called when the web socket sends message data
 IndexController.prototype._onSocketMessage = function (data) {
   var messages = JSON.parse(data);
@@ -165,13 +203,8 @@ IndexController.prototype._onSocketMessage = function (data) {
       store.put(message);
     });
 
-    // TODO: keep the newest 30 entries in 'wittrs',
-    // but delete the rest.
-    //
-    // Hint: you can use .openCursor(null, 'prev') to
-    // open a cursor that goes through an index/store
-    // backwards.
-    store.index('by-date').openCursor(null, 'prev').then(function (cursor) {
+    // limit store to 30 items
+    store.index('by-date').openCursor(null, "prev").then(function (cursor) {
       return cursor.advance(30);
     }).then(function deleteRest(cursor) {
       if (!cursor) return;
